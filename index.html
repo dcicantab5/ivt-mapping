@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Stroke Services Interactive Matrix</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+```
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        overflow: hidden;
+    }
+
+    .header {
+        background: linear-gradient(135deg, #4472C4 0%, #2C5AA0 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .header h1 {
+        font-size: 2em;
+        margin-bottom: 10px;
+    }
+
+    .header p {
+        font-size: 1.1em;
+        opacity: 0.9;
+    }
+
+    .controls {
+        padding: 30px;
+        background: #f8f9fa;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 16px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        transition: border-color 0.3s;
+    }
+
+    .search-box:focus {
+        outline: none;
+        border-color: #4472C4;
+    }
+
+    .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .filter-btn {
+        padding: 10px 20px;
+        border: 2px solid #ddd;
+        background: white;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .filter-btn.active {
+        background: #4472C4;
+        color: white;
+        border-color: #4472C4;
+    }
+
+    .filter-btn .count {
+        background: rgba(0,0,0,0.1);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+    }
+
+    .filter-btn.active .count {
+        background: rgba(255,255,255,0.3);
+    }
+
+    .stats {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        flex: 1;
+        min-width: 150px;
+        padding: 15px;
+        background: white;
+        border-radius: 10px;
+        border-left: 4px solid #4472C4;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .stat-card .label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+
+    .stat-card .value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        padding: 0 30px 30px 30px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    thead {
+        background: #4472C4;
+        color: white;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    th {
+        padding: 15px 12px;
+        text-align: left;
+        font-weight: 600;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+    }
+
+    th:hover {
+        background: #2C5AA0;
+    }
+
+    th .sort-icon {
+        margin-left: 5px;
+        font-size: 12px;
+        opacity: 0.5;
+    }
+
+    th.sorted .sort-icon {
+        opacity: 1;
+    }
+
+    td {
+        padding: 12px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    tbody tr.hidden {
+        display: none;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .status-csc {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-psc {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    .status-asrh {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-ct-only {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-none {
+        background: #e2e3e5;
+        color: #383d41;
+    }
+
+    .checkmark {
+        color: #28a745;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    .legend {
+        padding: 20px 30px;
+        background: #f8f9fa;
+        border-top: 2px solid #e9ecef;
+    }
+
+    .legend h3 {
+        margin-bottom: 15px;
+        color: #333;
+    }
+
+    .legend-items {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 10px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+        font-size: 18px;
+    }
+
+    @media (max-width: 768px) {
+        .header h1 {
+            font-size: 1.5em;
+        }
+
+        .controls {
+            padding: 20px;
+        }
+
+        .filters {
+            flex-direction: column;
+        }
+
+        .filter-btn {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        table {
+            font-size: 12px;
+        }
+
+        th, td {
+            padding: 8px 6px;
+        }
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Hospital Stroke Services Matrix</h1>
+            <p>Comprehensive Overview: Current Status & 5-Year Implementation Plan (2026-2030)</p>
+        </div>
+
+```
+    <div class="controls">
+        <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search by state or hospital name...">
+
+        <div class="stats" id="stats"></div>
+
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">
+                All Hospitals <span class="count" id="count-all">0</span>
+            </button>
+            <button class="filter-btn" data-filter="CSC">
+                CSC <span class="count" id="count-csc">0</span>
+            </button>
+            <button class="filter-btn" data-filter="PSC">
+                PSC <span class="count" id="count-psc">0</span>
+            </button>
+            <button class="filter-btn" data-filter="ASRH">
+                ASRH <span class="count" id="count-asrh">0</span>
+            </button>
+            <button class="filter-btn" data-filter="CT Only">
+                CT Only <span class="count" id="count-ct">0</span>
+            </button>
+            <button class="filter-btn" data-filter="None">
+                No Services <span class="count" id="count-none">0</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table id="hospitalTable">
+            <thead>
+                <tr>
+                    <th data-sort="state">State <span class="sort-icon">↕</span></th>
+                    <th data-sort="hospital">Hospital Name <span class="sort-icon">↕</span></th>
+                    <th data-sort="current">Current Status <span class="sort-icon">↕</span></th>
+                    <th data-sort="2026">2026 <span class="sort-icon">↕</span></th>
+                    <th data-sort="2027">2027 <span class="sort-icon">↕</span></th>
+                    <th data-sort="2028">2028 <span class="sort-icon">↕</span></th>
+                    <th data-sort="2029">2029 <span class="sort-icon">↕</span></th>
+                    <th data-sort="2030">2030 <span class="sort-icon">↕</span></th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+        <div class="no-results" id="noResults" style="display: none;">
+            No hospitals found matching your criteria.
+        </div>
+    </div>
+
+    <div class="legend">
+        <h3>Legend</h3>
+        <div class="legend-items">
+            <div class="legend-item">
+                <span class="status-badge status-csc">CSC</span>
+                <span>Comprehensive Stroke Centre (Thrombectomy + Stroke Unit + Thrombolysis)</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-badge status-psc">PSC</span>
+                <span>Primary Stroke Centre (Stroke Unit + Thrombolysis)</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-badge status-asrh">ASRH</span>
+                <span>Acute Stroke Ready Hospital (Thrombolysis intervention)</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-badge status-ct-only">CT Only</span>
+                <span>Hospital with CT scan but no thrombolysis services</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-badge status-none">None</span>
+                <span>No CT scan or thrombolysis services</span>
+            </div>
+            <div class="legend-item">
+                <span class="checkmark">✓</span>
+                <span>Planned implementation year for IVT services</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const hospitalData = [
+        { state: "PERLIS", hospital: "Hospital Tuanku Fauziah, Kangar", current: "CT Only", year2026: "✓", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "KEDAH", hospital: "Sultanah Bahiyah Hospital, Alor Setar", current: "CSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "KEDAH", hospital: "Hospital Sultanah Maliha, Langkawi", current: "CT Only", year2026: "✓", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "KEDAH", hospital: "Hospital Kulim", current: "ASRH", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "PULAU PINANG", hospital: "Hospital Pulau Pinang", current: "PSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "PULAU PINANG", hospital: "Hospital Kepala Batas", current: "ASRH", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "PULAU PINANG", hospital: "Hospital Bukit Mertajam", current: "ASRH", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "PERAK", hospital: "Raja Permaisuri Bainun Hospital, Ipoh", current: "PSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "PERAK", hospital: "Hospital Teluk Intan", current: "ASRH", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "PERAK", hospital: "Hospital Slim River", current: "CT Only", year2026: "✓", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "PERAK", hospital: "Hospital Gerik", current: "None", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "✓" },
+        { state: "SELANGOR", hospital: "Sungai Buloh Hospital", current: "CSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SELANGOR", hospital: "Hospital Tengku Ampuan Rahimah, Klang", current: "PSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SELANGOR", hospital: "Hospital Selayang", current: "PSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SELANGOR", hospital: "Hospital Ampang", current: "CT Only", year2026: "✓", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SELANGOR", hospital: "Hospital Shah Alam", current: "CT Only", year2026: "✓", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SELANGOR", hospital: "Hospital Sultan Idris Shah, Serdang", current: "CT Only", year2026: "", year2027: "✓", year2028: "", year2029: "", year2030: "" },
+        { state: "SELANGOR", hospital: "Hospital Tengku Permaisuri Norashikin, Kajang", current: "CT Only", year2026: "", year2027: "✓", year2028: "", year2029: "", year2030: "" },
+        { state: "SELANGOR", hospital: "Hospital Banting", current: "CT Only", year2026: "", year2027: "", year2028: "✓", year2029: "", year2030: "" },
+        { state: "SELANGOR", hospital: "Sultan Abdul Aziz Shah Hospital*", current: "CSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "KUALA LUMPUR", hospital: "Kuala Lumpur Hospital", current: "CSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "KUALA LUMPUR", hospital: "Canselor Tuanku Muhriz Hospital*", current: "CSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "KUALA LUMPUR", hospital: "University Malaya Medical Centre*", current: "CSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "PUTRAJAYA", hospital: "Hospital Putrajaya", current: "PSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "NEGERI SEMBILAN", hospital: "Hospital Tuanku Ja'afar, Seremban", current: "PSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "NEGERI SEMBILAN", hospital: "Hospital Rembau", current: "CT Only", year2026: "✓", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "NEGERI SEMBILAN", hospital: "Hospital Kuala Pilah", current: "CT Only", year2026: "", year2027: "✓", year2028: "", year2029: "", year2030: "" },
+        { state: "NEGERI SEMBILAN", hospital: "Hospital Port Dickson", current: "None", year2026: "", year2027: "", year2028: "", year2029: "✓", year2030: "" },
+        { state: "NEGERI SEMBILAN", hospital: "Hospital Tampin", current: "None", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "✓" },
+        { state: "MELAKA", hospital: "Hospital Melaka", current: "PSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "JOHOR", hospital: "Sultanah Aminah Hospital, Johor Bahru", current: "CSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "JOHOR", hospital: "Hospital Sultanah Nora Ismail, Batu Pahat", current: "CT Only", year2026: "✓", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "JOHOR", hospital: "Hospital Pakar Sultanah Fatimah, Muar", current: "CT Only", year2026: "", year2027: "✓", year2028: "", year2029: "", year2030: "" },
+        { state: "JOHOR", hospital: "Hospital Enche' Besar Hajjah Kalsom, Kluang", current: "CT Only", year2026: "", year2027: "", year2028: "✓", year2029: "", year2030: "" },
+        { state: "JOHOR", hospital: "Hospital Segamat", current: "ASRH", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "PAHANG", hospital: "Hospital Tengku Ampuan Afzan, Kuantan", current: "PSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "PAHANG", hospital: "Hospital Sultan Haji Ahmad Shah, Temerloh", current: "ASRH", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "PAHANG", hospital: "Hospital Kuala Lipis", current: "CT Only", year2026: "✓", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "PAHANG", hospital: "Hospital Pekan", current: "None", year2026: "", year2027: "", year2028: "✓", year2029: "", year2030: "" },
+        { state: "PAHANG", hospital: "Hospital Bentong", current: "None", year2026: "", year2027: "", year2028: "", year2029: "✓", year2030: "" },
+        { state: "PAHANG", hospital: "Al-Sultan Abdullah Hospital*", current: "ASRH", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "TERENGGANU", hospital: "Hospital Sultanah Nur Zahirah, Kuala Terengganu", current: "PSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "TERENGGANU", hospital: "Hospital Besut", current: "None", year2026: "", year2027: "✓", year2028: "", year2029: "", year2030: "" },
+        { state: "TERENGGANU", hospital: "Hospital Dungun", current: "None", year2026: "", year2027: "", year2028: "✓", year2029: "", year2030: "" },
+        { state: "KELANTAN", hospital: "Hospital Raja Perempuan Zainab II, Kota Bharu", current: "PSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SABAH", hospital: "Queen Elizabeth Hospital, Kota Kinabalu", current: "CSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SABAH", hospital: "Hospital Tawau", current: "PSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SABAH", hospital: "Hospital Duchess of Kent, Sandakan", current: "ASRH", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SABAH", hospital: "Hospital Keningau", current: "CT Only", year2026: "✓", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SABAH", hospital: "Hospital Lahad Datu", current: "CT Only", year2026: "✓", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SARAWAK", hospital: "Sarawak General Hospital", current: "CSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SARAWAK", hospital: "Hospital Miri", current: "PSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SARAWAK", hospital: "Hospital Sibu", current: "PSC", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SARAWAK", hospital: "Hospital Bintulu", current: "ASRH", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SARAWAK", hospital: "Hospital Sarikei", current: "ASRH", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SARAWAK", hospital: "Hospital Seri Aman", current: "ASRH", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SARAWAK", hospital: "Hospital Limbang", current: "ASRH", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "SARAWAK", hospital: "Hospital Kapit", current: "ASRH", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+        { state: "LABUAN", hospital: "Labuan Hospital", current: "ASRH", year2026: "", year2027: "", year2028: "", year2029: "", year2030: "" },
+    ];
+
+    let currentFilter = 'all';
+    let currentSort = { column: 'state', direction: 'asc' };
+    let searchTerm = '';
+
+    function getStatusClass(status) {
+        const statusMap = {
+            'CSC': 'status-csc',
+            'PSC': 'status-psc',
+            'ASRH': 'status-asrh',
+            'CT Only': 'status-ct-only',
+            'None': 'status-none'
+        };
+        return statusMap[status] || '';
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        
+        let filteredData = hospitalData.filter(row => {
+            const matchesFilter = currentFilter === 'all' || row.current === currentFilter;
+            const matchesSearch = !searchTerm || 
+                row.state.toLowerCase().includes(searchTerm) || 
+                row.hospital.toLowerCase().includes(searchTerm);
+            return matchesFilter && matchesSearch;
+        });
+
+        // Sort data
+        filteredData.sort((a, b) => {
+            let aVal, bVal;
+            
+            if (currentSort.column === 'state' || currentSort.column === 'hospital' || currentSort.column === 'current') {
+                aVal = a[currentSort.column] || '';
+                bVal = b[currentSort.column] || '';
+            } else {
+                aVal = a['year' + currentSort.column] || '';
+                bVal = b['year' + currentSort.column] || '';
+            }
+            
+            if (currentSort.direction === 'asc') {
+                return aVal.localeCompare(bVal);
+            } else {
+                return bVal.localeCompare(aVal);
+            }
+        });
+
+        if (filteredData.length === 0) {
+            document.getElementById('noResults').style.display = 'block';
+            document.querySelector('table').style.display = 'none';
+        } else {
+            document.getElementById('noResults').style.display = 'none';
+            document.querySelector('table').style.display = 'table';
+            
+            filteredData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${row.state}</strong></td>
+                    <td>${row.hospital}</td>
+                    <td><span class="status-badge ${getStatusClass(row.current)}">${row.current}</span></td>
+                    <td style="text-align: center;">${row.year2026 ? '<span class="checkmark">✓</span>' : ''}</td>
+                    <td style="text-align: center;">${row.year2027 ? '<span class="checkmark">✓</span>' : ''}</td>
+                    <td style="text-align: center;">${row.year2028 ? '<span class="checkmark">✓</span>' : ''}</td>
+                    <td style="text-align: center;">${row.year2029 ? '<span class="checkmark">✓</span>' : ''}</td>
+                    <td style="text-align: center;">${row.year2030 ? '<span class="checkmark">✓</span>' : ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        updateStats();
+    }
+
+    function updateStats() {
+        const counts = {
+            all: hospitalData.length,
+            csc: hospitalData.filter(h => h.current === 'CSC').length,
+            psc: hospitalData.filter(h => h.current === 'PSC').length,
+            asrh: hospitalData.filter(h => h.current === 'ASRH').length,
+            ct: hospitalData.filter(h => h.current === 'CT Only').length,
+            none: hospitalData.filter(h => h.current === 'None').length
+        };
+
+        document.getElementById('count-all').textContent = counts.all;
+        document.getElementById('count-csc').textContent = counts.csc;
+        document.getElementById('count-psc').textContent = counts.psc;
+        document.getElementById('count-asrh').textContent = counts.asrh;
+        document.getElementById('count-ct').textContent = counts.ct;
+        document.getElementById('count-none').textContent = counts.none;
+
+        // Update stats cards
+        const statsDiv = document.getElementById('stats');
+        statsDiv.innerHTML = `
+            <div class="stat-card">
+                <div class="label">Total Hospitals</div>
+                <div class="value">${counts.all}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">With Thrombolysis</div>
+                <div class="value">${counts.csc + counts.psc + counts.asrh}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Planned (2026-2030)</div>
+                <div class="value">${counts.ct + counts.none}</div>
+            </div>
+        `;
+    }
+
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentFilter = this.dataset.filter;
+            renderTable();
+        });
+    });
+
+    // Search
+    document.getElementById('searchBox').addEventListener('input', function(e) {
+        searchTerm = e.target.value.toLowerCase();
+        renderTable();
+    });
+
+    // Sorting
+    document.querySelectorAll('th[data-sort]').forEach(th => {
+        th.addEventListener('click', function() {
+            const column = this.dataset.sort;
+            
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+            
+            // Update UI
+            document.querySelectorAll('th').forEach(h => h.classList.remove('sorted'));
+            this.classList.add('sorted');
+            
+            const icon = this.querySelector('.sort-icon');
+            icon.textContent = currentSort.direction === 'asc' ? '↑' : '↓';
+            
+            renderTable();
+        });
+    });
+
+    // Initial render
+    renderTable();
+</script>
+```
+
+</body>
+</html>
